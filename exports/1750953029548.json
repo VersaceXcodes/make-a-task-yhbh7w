@@ -1,0 +1,19 @@
+{
+  "timestamp": 1750953029548,
+  "operation": {
+    "id": "webapp:react:store",
+    "refs": {
+      "id": "redux",
+      "version": "1750953015532"
+    }
+  },
+  "projectId": "make-a-task",
+  "files": [
+    {
+      "path": "../../apps/make-a-task/vitereact/src/store/main.tsx",
+      "type": "text",
+      "size": 7099,
+      "dependencies": false
+    }
+  ]
+}

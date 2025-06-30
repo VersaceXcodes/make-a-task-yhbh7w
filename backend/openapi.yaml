@@ -1,0 +1,337 @@
+openapi: 3.0.0
+info:
+  title: Make A Task API
+  version: 1.0.0
+  description: API for managing personal and professional tasks.
+servers:
+  - url: http://localhost:3000
+paths:
+  /tasks:
+    get:
+      operationId: get_all_tasks
+      summary: Retrieves a list of all tasks.
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - pending
+              - in_progress
+              - completed
+              - all
+            default: all
+          description: Filter tasks by their status.
+        - name: sortBy
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - due_date
+              - planned_completion_date
+              - title
+              - created_at
+              - updated_at
+          description: Field to sort the tasks by.
+        - name: sortOrder
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - asc
+              - desc
+            default: asc
+          description: Order of sorting (ascending or descending).
+      responses:
+        "200":
+          description: A list of tasks.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/task_item"
+        "400":
+          description: Bad Request - Invalid query parameters.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error_response"
+        "500":
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error_response"
+    post:
+      operationId: create_task
+      summary: Creates a new task.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/create_task_request"
+      responses:
+        "201":
+          description: Task created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/task_item"
+        "400":
+          description: Bad Request - Invalid input data.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error_response"
+        "500":
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error_response"
+  /tasks/{task_id}:
+    get:
+      operationId: get_task_by_id
+      summary: Retrieves details of a specific task.
+      parameters:
+        - name: task_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: The unique identifier of the task.
+      responses:
+        "200":
+          description: Task details.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/task_item"
+        "404":
+          description: Task not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error_response"
+        "500":
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error_response"
+    put:
+      operationId: update_task
+      summary: Updates an existing task.
+      parameters:
+        - name: task_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: The unique identifier of the task to update.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/update_task_request"
+      responses:
+        "200":
+          description: Task updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/task_item"
+        "400":
+          description: Bad Request - Invalid input data.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error_response"
+        "404":
+          description: Task not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error_response"
+        "500":
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error_response"
+    delete:
+      operationId: delete_task
+      summary: Deletes a specific task.
+      parameters:
+        - name: task_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: The unique identifier of the task to delete.
+      responses:
+        "204":
+          description: Task deleted successfully.
+        "404":
+          description: Task not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error_response"
+        "500":
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error_response"
+components:
+  schemas:
+    task_item:
+      type: object
+      properties:
+        task_id:
+          type: integer
+          format: int64
+          description: Unique identifier for the task.
+        title:
+          type: string
+          maxLength: 255
+          description: The main name or title of the task.
+        description:
+          type: string
+          maxLength: 1000
+          nullable: true
+          description: Detailed explanation or context for the task.
+        due_date:
+          type: string
+          format: date
+          nullable: true
+          description: The official deadline for the task (YYYY-MM-DD).
+        due_time:
+          type: string
+          format: time
+          nullable: true
+          description: The specific time of day the task is due (HH:MM).
+        planned_completion_date:
+          type: string
+          format: date
+          nullable: true
+          description: The user's intended date for completing the task (YYYY-MM-DD).
+        estimated_finish_time:
+          type: number
+          format: float
+          nullable: true
+          description: An estimate of the duration required to complete the task (in hours).
+        status:
+          type: string
+          enum:
+            - pending
+            - in_progress
+            - completed
+          description: The current state of the task.
+        created_at:
+          type: string
+          format: date-time
+          description: Timestamp indicating when the task was created (ISO 8601).
+        updated_at:
+          type: string
+          format: date-time
+          description: Timestamp indicating when the task was last modified (ISO 8601).
+      required:
+        - task_id
+        - title
+        - status
+        - created_at
+        - updated_at
+    create_task_request:
+      type: object
+      properties:
+        title:
+          type: string
+          maxLength: 255
+          description: The main name or title of the task. (Required)
+        description:
+          type: string
+          maxLength: 1000
+          nullable: true
+          description: Detailed explanation or context for the task.
+        due_date:
+          type: string
+          format: date
+          nullable: true
+          description: The official deadline for the task (YYYY-MM-DD).
+        due_time:
+          type: string
+          format: time
+          nullable: true
+          description: The specific time of day the task is due (HH:MM). Must be provided
+            if due_date is provided.
+        planned_completion_date:
+          type: string
+          format: date
+          nullable: true
+          description: The user's intended date for completing the task (YYYY-MM-DD).
+        estimated_finish_time:
+          type: number
+          format: float
+          nullable: true
+          description: An estimate of the duration required to complete the task (in hours).
+      required:
+        - title
+    update_task_request:
+      type: object
+      properties:
+        title:
+          type: string
+          maxLength: 255
+          description: The main name or title of the task.
+        description:
+          type: string
+          maxLength: 1000
+          nullable: true
+          description: Detailed explanation or context for the task.
+        due_date:
+          type: string
+          format: date
+          nullable: true
+          description: The official deadline for the task (YYYY-MM-DD).
+        due_time:
+          type: string
+          format: time
+          nullable: true
+          description: The specific time of day the task is due (HH:MM).
+        planned_completion_date:
+          type: string
+          format: date
+          nullable: true
+          description: The user's intended date for completing the task (YYYY-MM-DD).
+        estimated_finish_time:
+          type: number
+          format: float
+          nullable: true
+          description: An estimate of the duration required to complete the task (in hours).
+        status:
+          type: string
+          enum:
+            - pending
+            - in_progress
+            - completed
+          description: The current state of the task.
+      description: Fields to update. All fields are optional.
+    error_response:
+      type: object
+      properties:
+        message:
+          type: string
+          description: A human-readable error message.
+        code:
+          type: string
+          description: An error code for programmatic handling.
+      required:
+        - message
